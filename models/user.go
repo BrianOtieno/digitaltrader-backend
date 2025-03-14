@@ -5,6 +5,7 @@ import (
 	"digitaltrader/db"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/jinzhu/gorm"
 	"golang.org/x/crypto/bcrypt"
@@ -18,17 +19,36 @@ type LoginRequest struct {
 
 type User struct {
 	gorm.Model
-	ID            uint   `json:"id" gorm:"primary_key:auto_increment"`
-	FirstName     string `json:"firstname"`
-	LastName      string `json:"lastname"`
-	Username      string `json:"username" gorm:"unique"`
-	Password      string `json:"password"` // Nullable for social logins
-	ProfilePhoto  string `json:"profile_photo"`
-	IsActive      bool   `json:"is_active" gorm:"default:true;not null"`
-	IsDeleted     bool   `json:"is_deleted" gorm:"default:false;not null"`
+	ID           uint   `json:"id" gorm:"primary_key:auto_increment"`
+	FirstName    string `json:"firstname"`
+	LastName     string `json:"lastname"`
+	Username     string `json:"username" gorm:"unique"`
+	Password     string `json:"password"` // Nullable for social logins
+	ProfilePhoto string `json:"profile_photo"`
+	IsActive     bool   `json:"is_active" gorm:"default:true;not null"`
+	IsDeleted    bool   `json:"is_deleted" gorm:"default:false;not null"`
+
+	// OAuth Fields
 	GoogleOAuthID string `json:"google_oauth_id" gorm:"unique;default:null"` // For Google login
 	AppleOAuthID  string `json:"apple_oauth_id" gorm:"unique;default:null"`  // For Apple login
-	Email         string `json:"email" gorm:"unique"`
+
+	// Additional Fields from Laravel Migration
+	CountryCode   string    `json:"country_code"`
+	Mobile        string    `json:"mobile"`
+	Cover         string    `json:"cover" gorm:"default:null"`
+	Lat           string    `json:"lat" gorm:"default:null"`
+	Lng           string    `json:"lng" gorm:"default:null"`
+	Gender        int8      `json:"gender" gorm:"default:null"`
+	Verified      int8      `json:"verified" gorm:"default:null"`
+	Type          string    `json:"type" gorm:"default:null"` // 0 = admin, 1 = user, 2 = store, 3 = driver
+	DOB           time.Time `json:"dob" gorm:"default:null"`
+	Date          time.Time `json:"date" gorm:"default:null"`
+	FCMToken      string    `json:"fcm_token" gorm:"default:null"`
+	Others        string    `json:"others" gorm:"default:null"`
+	StripeKey     string    `json:"stripe_key" gorm:"default:null"`
+	ExtraField    string    `json:"extra_field" gorm:"default:null"`
+	Status        int8      `json:"status" gorm:"default:1"`
+	RememberToken string    `json:"remember_token" gorm:"default:null"`
 }
 
 // MigrateUser auto-migrates the User model, including new fields
