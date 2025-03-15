@@ -115,15 +115,6 @@ func GetUserByID(user *User, id string) error {
 	return nil
 }
 
-// // GetUserByUsername retrieves a user by their username
-// func GetUserByUsername(user *User, username string) error {
-// 	db := db.InitDB() // Initialize the database connection
-// 	if err := db.Where("username = ?", username).Find(&user).Error; err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
-
 // DeleteUser deletes a user from the database
 func DeleteUser(user *User, id string) error {
 	db := db.InitDB()
