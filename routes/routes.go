@@ -57,12 +57,33 @@ func SetupRouter() *gin.Engine {
 
 		protected := api.Group("/auth").Use(middlewares.Authz())
 		{
-			//user
+			// user
 			protected.POST("/users", controllers.CreateUser)
 			protected.GET("/users", controllers.GetAllUsers)
 			protected.GET("/users/:id", controllers.GetUserByID)
 			protected.PUT("/users/:id", controllers.UpdateUser)
 			protected.DELETE("/users/:id", controllers.DeleteUser)
+
+			// password reset
+			protected.POST("/", controllers.CreatePasswordResetTokenController)
+			protected.GET("/:email", controllers.GetPasswordResetTokenController)
+			protected.PUT("/:email", controllers.UpdatePasswordResetTokenController)
+			protected.DELETE("/:email", controllers.DeletePasswordResetTokenController)
+			protected.GET("/", controllers.GetAllPasswordResetTokensController)
+
+			// transactions
+			protected.POST("/", controllers.CreateTransactionController)
+			protected.GET("/:id", controllers.GetTransactionController)
+			protected.PUT("/:id", controllers.UpdateTransactionController)
+			protected.DELETE("/:id", controllers.DeleteTransactionController)
+			protected.GET("/", controllers.GetAllTransactionsController)
+
+			// transfers
+			protected.POST("/", controllers.CreateTransferHandler)
+			protected.GET("/:id", controllers.GetTransferByIDHandler)
+			protected.GET("/", controllers.GetAllTransfersHandler)
+			protected.PUT("/:id", controllers.UpdateTransferHandler)
+			protected.DELETE("/:id", controllers.DeleteTransferHandler)
 
 		}
 	}
