@@ -12,6 +12,12 @@ type PasswordResetToken struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+// MigrateUser auto-migrates the User model, including new fields
+func MigratePasswordResetToken() {
+	db := db.InitDB()
+	db.Set("gorm:table_options", "ENGINE=InnoDB").AutoMigrate(&PasswordResetToken{})
+}
+
 // CreatePasswordResetToken creates a new password reset token
 func CreatePasswordResetToken(token *PasswordResetToken) error {
 	db := db.InitDB()
