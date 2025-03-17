@@ -3,6 +3,7 @@ package controllers
 import (
 	"digitaltrader/models"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -25,10 +26,15 @@ func CreateTransferHandler(c *gin.Context) {
 
 // GetTransferByIDHandler handles retrieving a transfer by ID
 func GetTransferByIDHandler(c *gin.Context) {
-	id := c.Param("id")
-	var transfer models.Transfer
+	idStr := c.Param("id")
+	id, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
 
-	if err := models.GetTransferByID(&transfer, id); err != nil {
+	transfer, err := models.GetTransferByID(uint(id))
+	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Transfer not found"})
 		return
 	}
@@ -38,9 +44,8 @@ func GetTransferByIDHandler(c *gin.Context) {
 
 // GetAllTransfersHandler handles retrieving all transfers
 func GetAllTransfersHandler(c *gin.Context) {
-	var transfers []models.Transfer
-
-	if err := models.GetAllTransfers(&transfers); err != nil {
+	transfers, err := models.GetAllTransfers()
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -50,15 +55,20 @@ func GetAllTransfersHandler(c *gin.Context) {
 
 // UpdateTransferHandler handles updating a transfer by ID
 func UpdateTransferHandler(c *gin.Context) {
-	id := c.Param("id")
-	var transfer models.Transfer
+	idStr := c.Param("id")
+	id, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
 
+	var transfer models.Transfer
 	if err := c.ShouldBindJSON(&transfer); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := models.UpdateTransfer(&transfer, id); err != nil {
+	if err := models.UpdateTransfer(&transfer, uint(id)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -68,9 +78,14 @@ func UpdateTransferHandler(c *gin.Context) {
 
 // DeleteTransferHandler handles deleting a transfer by ID
 func DeleteTransferHandler(c *gin.Context) {
-	id := c.Param("id")
+	idStr := c.Param("id")
+	id, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
 
-	if err := models.DeleteTransfer(id); err != nil {
+	if err := models.DeleteTransfer(uint(id)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
