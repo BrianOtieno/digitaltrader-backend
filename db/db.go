@@ -24,7 +24,7 @@ func InitDB() *gorm.DB {
 	DB_PASSWORD := os.Getenv("DB_PASSWORD")
 	DB_NAME := os.Getenv("DB_NAME")
 	DB_HOST := os.Getenv("DB_HOST")
-	DB_PORT := os.Getenv("3306")
+	DB_PORT := os.Getenv("DB_PORT")
 
 	// Construct the DSN (Data Source Name) for MySQL connection
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&loc=Local",
