@@ -85,6 +85,34 @@ func SetupRouter() *gin.Engine {
 			protected.PUT("/:id", controllers.UpdateTransferHandler)
 			protected.DELETE("/:id", controllers.DeleteTransferHandler)
 
+			//wallets
+			protected.POST("", controllers.CreateWalletController)
+			protected.GET("/:id", controllers.GetWalletController)
+			protected.PUT("/:id", controllers.UpdateWalletController)
+			protected.DELETE("/:id", controllers.DeleteWalletController)
+			protected.GET("", controllers.GetAllWalletsController)
+
+			// failed jobs
+			protected.POST("", controllers.CreateFailedJobController)
+			protected.GET("/:id", controllers.GetFailedJobController)
+			protected.PUT("/:id", controllers.UpdateFailedJobController)
+			protected.DELETE("/:id", controllers.DeleteFailedJobController)
+			protected.GET("", controllers.GetAllFailedJobsController)
+
+			// categories
+			protected.POST("", controllers.CreateCategoryController)
+			protected.GET("/:id", controllers.GetCategoryController)
+			protected.PUT("/:id", controllers.UpdateCategoryController)
+			protected.DELETE("/:id", controllers.DeleteCategoryController)
+			protected.GET("", controllers.GetAllCategoriesController)
+
+			// address
+			protected.POST("", controllers.CreateAddressController)
+			protected.GET("/:id", controllers.GetAddressController)
+			protected.PUT("/:id", controllers.UpdateAddressController)
+			protected.DELETE("/:id", controllers.DeleteAddressController)
+			protected.GET("", controllers.GetAllAddressesController)
+
 		}
 	}
 
