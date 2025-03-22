@@ -5,177 +5,281 @@ import (
 	"digitaltrader/middlewares"
 	"time"
 
-	// "github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	cors "github.com/itsjamie/gin-cors"
 )
 
+// SetupRouter initializes and configures the Gin router with all routes
 func SetupRouter() *gin.Engine {
-	r := gin.New()
+	// Initialize Gin with default middleware (logger and recovery)
+	r := gin.Default()
+
+	// Apply CORS middleware
 	r.Use(cors.Middleware(cors.Config{
-		// Origins: "http://localhost",
 		Origins:         "https://xxx.com",
 		Methods:         "GET, PUT, POST, DELETE, OPTIONS",
 		RequestHeaders:  "Origin, Authorization, Content-Type",
 		ExposedHeaders:  "",
-		Credentials:     true, // Allow credentials
+		Credentials:     true,
 		MaxAge:          50 * time.Second,
 		ValidateHeaders: false,
 	}))
 
-	// r.Use(cors.New(cors.Config{
-	// 	AllowOrigins: []string{"https://xxx.com"},
-	// 	// AllowOrigins:     []string{"*"},
-	// 	AllowMethods:     []string{"GET", "PUT", "POST", "DELETE", "OPTIONS"},
-	// 	AllowHeaders:     []string{"Origin", "Authorization", "Content-Type"},
-	// 	ExposeHeaders:    []string{},
-	// 	AllowCredentials: true,
-	// 	MaxAge:           50 * time.Second,
-	// }))
-
-	// Apply the recovery middleware
+	// Apply custom recovery middleware
 	r.Use(middlewares.RecoveryMiddleware())
 
-	r.GET("/ping", func(c *gin.Context) {
+	// Root and health check endpoints
+	r.GET("/ping/", func(c *gin.Context) {
 		c.String(200, "pong")
 	})
 	r.GET("/", func(c *gin.Context) {
-		c.String(200, "Quantum Cartel Home")
+		c.String(200, "Welcome Home")
 	})
 
-	api := r.Group("/api")
+	// API base group
+	api := r.Group("/api/v1/")
 	{
-		public := api.Group("/public")
+		// Public routes (no authentication required)
+		public := api.Group("/public/")
 		{
-			//Register
-			public.POST("/signup", controllers.CreateUser)
-			// Sign in
-			public.POST("/login", controllers.Login)
-			//refresh token
-			public.POST("/refresh-token", controllers.RefreshToken)
+			public.POST("/signup/", controllers.CreateUser)
+			public.POST("/login/", controllers.Login)
+			public.POST("/refresh-token/", controllers.RefreshToken)
 		}
 
-		protected := api.Group("/auth").Use(middlewares.Authz())
+		// Protected routes (authentication required)
+		protected := api.Group("/auth/")
+		protected.Use(middlewares.Authz())
 		{
-			// user
-			protected.POST("/users", controllers.CreateUser)
-			protected.GET("/users", controllers.GetAllUsers)
-			protected.GET("/users/:id", controllers.GetUserByID)
-			protected.PUT("/users/:id", controllers.UpdateUser)
-			protected.DELETE("/users/:id", controllers.DeleteUser)
+			// Users
+			users := protected.Group("/users/")
+			{
+				users.POST("", controllers.CreateUser)
+				users.GET("", controllers.GetAllUsers)
+				users.GET(":id/", controllers.GetUserByID)
+				users.PUT(":id/", controllers.UpdateUser)
+				users.DELETE(":id/", controllers.DeleteUser)
+			}
 
-			// password reset
-			protected.POST("/", controllers.CreatePasswordResetTokenController)
-			protected.GET("/:email", controllers.GetPasswordResetTokenController)
-			protected.PUT("/:email", controllers.UpdatePasswordResetTokenController)
-			protected.DELETE("/:email", controllers.DeletePasswordResetTokenController)
-			protected.GET("/", controllers.GetAllPasswordResetTokensController)
+			// Password Reset Tokens
+			passwordReset := protected.Group("/password-reset/")
+			{
+				passwordReset.POST("", controllers.CreatePasswordResetTokenController)
+				passwordReset.GET(":email/", controllers.GetPasswordResetTokenController)
+				passwordReset.PUT(":email/", controllers.UpdatePasswordResetTokenController)
+				passwordReset.DELETE(":email/", controllers.DeletePasswordResetTokenController)
+				passwordReset.GET("", controllers.GetAllPasswordResetTokensController)
+			}
 
-			// transactions
-			protected.POST("/", controllers.CreateTransactionController)
-			protected.GET("/:id", controllers.GetTransactionController)
-			protected.PUT("/:id", controllers.UpdateTransactionController)
-			protected.DELETE("/:id", controllers.DeleteTransactionController)
-			protected.GET("/", controllers.GetAllTransactionsController)
+			// Transactions
+			transactions := protected.Group("/transactions/")
+			{
+				transactions.POST("", controllers.CreateTransactionController)
+				transactions.GET(":id/", controllers.GetTransactionController)
+				transactions.PUT(":id/", controllers.UpdateTransactionController)
+				transactions.DELETE(":id/", controllers.DeleteTransactionController)
+				transactions.GET("", controllers.GetAllTransactionsController)
+			}
 
-			// transfers
-			protected.POST("/", controllers.CreateTransferHandler)
-			protected.GET("/:id", controllers.GetTransferByIDHandler)
-			protected.GET("/", controllers.GetAllTransfersHandler)
-			protected.PUT("/:id", controllers.UpdateTransferHandler)
-			protected.DELETE("/:id", controllers.DeleteTransferHandler)
+			// Transfers
+			transfers := protected.Group("/transfers/")
+			{
+				transfers.POST("", controllers.CreateTransferHandler)
+				transfers.GET(":id/", controllers.GetTransferByIDHandler)
+				transfers.GET("", controllers.GetAllTransfersHandler)
+				transfers.PUT(":id/", controllers.UpdateTransferHandler)
+				transfers.DELETE(":id/", controllers.DeleteTransferHandler)
+			}
 
-			//wallets
-			protected.POST("", controllers.CreateWalletController)
-			protected.GET("/:id", controllers.GetWalletController)
-			protected.PUT("/:id", controllers.UpdateWalletController)
-			protected.DELETE("/:id", controllers.DeleteWalletController)
-			protected.GET("", controllers.GetAllWalletsController)
+			// Wallets
+			wallets := protected.Group("/wallets/")
+			{
+				wallets.POST("", controllers.CreateWalletController)
+				wallets.GET(":id/", controllers.GetWalletController)
+				wallets.PUT(":id/", controllers.UpdateWalletController)
+				wallets.DELETE(":id/", controllers.DeleteWalletController)
+				wallets.GET("", controllers.GetAllWalletsController)
+			}
 
-			// failed jobs
-			protected.POST("", controllers.CreateFailedJobController)
-			protected.GET("/:id", controllers.GetFailedJobController)
-			protected.PUT("/:id", controllers.UpdateFailedJobController)
-			protected.DELETE("/:id", controllers.DeleteFailedJobController)
-			protected.GET("", controllers.GetAllFailedJobsController)
+			// Failed Jobs
+			failedJobs := protected.Group("/failed-jobs/")
+			{
+				failedJobs.POST("", controllers.CreateFailedJobController)
+				failedJobs.GET(":id/", controllers.GetFailedJobController)
+				failedJobs.PUT(":id/", controllers.UpdateFailedJobController)
+				failedJobs.DELETE(":id/", controllers.DeleteFailedJobController)
+				failedJobs.GET("", controllers.GetAllFailedJobsController)
+			}
 
-			// categories
-			protected.POST("", controllers.CreateCategoryController)
-			protected.GET("/:id", controllers.GetCategoryController)
-			protected.PUT("/:id", controllers.UpdateCategoryController)
-			protected.DELETE("/:id", controllers.DeleteCategoryController)
-			protected.GET("", controllers.GetAllCategoriesController)
+			// Categories
+			categories := protected.Group("/categories/")
+			{
+				categories.POST("", controllers.CreateCategoryController)
+				categories.GET(":id/", controllers.GetCategoryController)
+				categories.PUT(":id/", controllers.UpdateCategoryController)
+				categories.DELETE(":id/", controllers.DeleteCategoryController)
+				categories.GET("", controllers.GetAllCategoriesController)
+			}
 
-			// address
-			protected.POST("", controllers.CreateAddressController)
-			protected.GET("/:id", controllers.GetAddressController)
-			protected.PUT("/:id", controllers.UpdateAddressController)
-			protected.DELETE("/:id", controllers.DeleteAddressController)
-			protected.GET("", controllers.GetAllAddressesController)
+			// Addresses
+			addresses := protected.Group("/addresses/")
+			{
+				addresses.POST("", controllers.CreateAddressController)
+				addresses.GET(":id/", controllers.GetAddressController)
+				addresses.PUT(":id/", controllers.UpdateAddressController)
+				addresses.DELETE(":id/", controllers.DeleteAddressController)
+				addresses.GET("", controllers.GetAllAddressesController)
+			}
 
-			// chat room
-			protected.POST("", controllers.CreateChatRoomController)
-			protected.GET("/:id", controllers.GetChatRoomController)
-			protected.PUT("/:id", controllers.UpdateChatRoomController)
-			protected.DELETE("/:id", controllers.DeleteChatRoomController)
-			protected.GET("", controllers.GetAllChatRoomsController)
+			// Chat Rooms
+			chatRooms := protected.Group("/chat-rooms/")
+			{
+				chatRooms.POST("", controllers.CreateChatRoomController)
+				chatRooms.GET(":id/", controllers.GetChatRoomController)
+				chatRooms.PUT(":id/", controllers.UpdateChatRoomController)
+				chatRooms.DELETE(":id/", controllers.DeleteChatRoomController)
+				chatRooms.GET("", controllers.GetAllChatRoomsController)
+			}
 
-			// cities
-			protected.POST("", controllers.CreateCityController)
-			protected.GET("/:id", controllers.GetCityController)
-			protected.PUT("/:id", controllers.UpdateCityController)
-			protected.DELETE("/:id", controllers.DeleteCityController)
-			protected.GET("", controllers.GetAllCitiesController)
+			// Cities
+			cities := protected.Group("/cities/")
+			{
+				cities.POST("", controllers.CreateCityController)
+				cities.GET(":id/", controllers.GetCityController)
+				cities.PUT(":id/", controllers.UpdateCityController)
+				cities.DELETE(":id/", controllers.DeleteCityController)
+				cities.GET("", controllers.GetAllCitiesController)
+			}
 
-			// favourites
-			protected.POST("", controllers.CreateFavouriteController)
-			protected.GET("/:id", controllers.GetFavouriteController)
-			protected.PUT("/:id", controllers.UpdateFavouriteController)
-			protected.DELETE("/:id", controllers.DeleteFavouriteController)
-			protected.GET("", controllers.GetAllFavouritesController)
+			// Favourites
+			favourites := protected.Group("/favourites/")
+			{
+				favourites.POST("", controllers.CreateFavouriteController)
+				favourites.GET(":id/", controllers.GetFavouriteController)
+				favourites.PUT(":id/", controllers.UpdateFavouriteController)
+				favourites.DELETE(":id/", controllers.DeleteFavouriteController)
+				favourites.GET("", controllers.GetAllFavouritesController)
+			}
 
-			// flush
-			protected.POST("", controllers.CreateFlushController)
-			protected.GET("/:id", controllers.GetFlushController)
-			protected.PUT("/:id", controllers.UpdateFlushController)
-			protected.DELETE("/:id", controllers.DeleteFlushController)
-			protected.GET("", controllers.GetAllFlushesController)
+			// Flush
+			flushes := protected.Group("/flushes/")
+			{
+				flushes.POST("", controllers.CreateFlushController)
+				flushes.GET(":id/", controllers.GetFlushController)
+				flushes.PUT(":id/", controllers.UpdateFlushController)
+				flushes.DELETE(":id/", controllers.DeleteFlushController)
+				flushes.GET("", controllers.GetAllFlushesController)
+			}
 
-			// chat message
-			protected.POST("", controllers.CreateChatMessageController)
-			protected.GET("/:id", controllers.GetChatMessageController)
-			protected.PUT("/:id", controllers.UpdateChatMessageController)
-			protected.DELETE("/:id", controllers.DeleteChatMessageController)
-			protected.GET("", controllers.GetAllChatMessagesController)
+			// Chat Messages
+			chatMessages := protected.Group("/chat-messages/")
+			{
+				chatMessages.POST("", controllers.CreateChatMessageController)
+				chatMessages.GET(":id/", controllers.GetChatMessageController)
+				chatMessages.PUT(":id/", controllers.UpdateChatMessageController)
+				chatMessages.DELETE(":id/", controllers.DeleteChatMessageController)
+				chatMessages.GET("", controllers.GetAllChatMessagesController)
+			}
 
-			// general
-			protected.POST("", controllers.CreateGeneralController)
-			protected.GET("/:id", controllers.GetGeneralController)
-			protected.PUT("/:id", controllers.UpdateGeneralController)
-			protected.DELETE("/:id", controllers.DeleteGeneralController)
-			protected.GET("", controllers.GetAllGeneralsController)
+			// General
+			generals := protected.Group("/generals/")
+			{
+				generals.POST("", controllers.CreateGeneralController)
+				generals.GET(":id/", controllers.GetGeneralController)
+				generals.PUT(":id/", controllers.UpdateGeneralController)
+				generals.DELETE(":id/", controllers.DeleteGeneralController)
+				generals.GET("", controllers.GetAllGeneralsController)
+			}
 
-			// language
-			protected.POST("", controllers.CreateLanguageController)
-			protected.GET("/:id", controllers.GetLanguageController)
-			protected.PUT("/:id", controllers.UpdateLanguageController)
-			protected.DELETE("/:id", controllers.DeleteLanguageController)
-			protected.GET("", controllers.GetAllLanguagesController)
+			// Languages
+			languages := protected.Group("/languages/")
+			{
+				languages.POST("", controllers.CreateLanguageController)
+				languages.GET(":id/", controllers.GetLanguageController)
+				languages.PUT(":id/", controllers.UpdateLanguageController)
+				languages.DELETE(":id/", controllers.DeleteLanguageController)
+				languages.GET("", controllers.GetAllLanguagesController)
+			}
 
-			// otp
-			protected.POST("", controllers.CreateOTPController)
-			protected.GET("/:id", controllers.GetOTPController)
-			protected.PUT("/:id", controllers.UpdateOTPController)
-			protected.DELETE("/:id", controllers.DeleteOTPController)
-			protected.GET("", controllers.GetAllOTPsController)
+			// OTPs
+			otps := protected.Group("/otps/")
+			{
+				otps.POST("", controllers.CreateOTPController)
+				otps.GET(":id/", controllers.GetOTPController)
+				otps.PUT(":id/", controllers.UpdateOTPController)
+				otps.DELETE(":id/", controllers.DeleteOTPController)
+				otps.GET("", controllers.GetAllOTPsController)
+			}
 
-			// payment
-			protected.POST("", controllers.CreatePaymentController)
-			protected.GET("/:id", controllers.GetPaymentController)
-			protected.PUT("/:id", controllers.UpdatePaymentController)
-			protected.DELETE("/:id", controllers.DeletePaymentController)
-			protected.GET("", controllers.GetAllPaymentsController)
+			// Payments
+			payments := protected.Group("/payments/")
+			{
+				payments.POST("", controllers.CreatePaymentController)
+				payments.GET(":id/", controllers.GetPaymentController)
+				payments.PUT(":id/", controllers.UpdatePaymentController)
+				payments.DELETE(":id/", controllers.DeletePaymentController)
+				payments.GET("", controllers.GetAllPaymentsController)
+			}
 
+			// Popups
+			popups := protected.Group("/popups/")
+			{
+				popups.POST("", controllers.CreatePopupController)
+				popups.GET(":id/", controllers.GetPopupController)
+				popups.PUT(":id/", controllers.UpdatePopupController)
+				popups.DELETE(":id/", controllers.DeletePopupController)
+				popups.GET("", controllers.GetAllPopupsController)
+			}
+
+			// Stores
+			stores := protected.Group("/stores/")
+			{
+				stores.POST("", controllers.CreateStoreController)
+				stores.GET(":id/", controllers.GetStoreController)
+				stores.PUT(":id/", controllers.UpdateStoreController)
+				stores.DELETE(":id/", controllers.DeleteStoreController)
+				stores.GET("", controllers.GetAllStoresController)
+			}
+
+			// Sub-Categories
+			subCategories := protected.Group("/sub-categories/")
+			{
+				subCategories.POST("", controllers.CreateSubCategoryController)
+				subCategories.GET(":id/", controllers.GetSubCategoryController)
+				subCategories.PUT(":id/", controllers.UpdateSubCategoryController)
+				subCategories.DELETE(":id/", controllers.DeleteSubCategoryController)
+				subCategories.GET("", controllers.GetAllSubCategoriesController)
+			}
+
+			// Analytics
+			analytics := protected.Group("/analytics/")
+			{
+				analytics.POST("", controllers.CreateAnalyticsController)
+				analytics.GET(":id/", controllers.GetAnalyticsController)
+				analytics.PUT(":id/", controllers.UpdateAnalyticsController)
+				analytics.DELETE(":id/", controllers.DeleteAnalyticsController)
+				analytics.GET("", controllers.GetAllAnalyticsController)
+			}
+
+			// Contacts
+			contacts := protected.Group("/contacts/")
+			{
+				contacts.POST("", controllers.CreateContactController)
+				contacts.GET(":id/", controllers.GetContactController)
+				contacts.PUT(":id/", controllers.UpdateContactController)
+				contacts.DELETE(":id/", controllers.DeleteContactController)
+				contacts.GET("", controllers.GetAllContactsController)
+			}
+
+			// Drivers
+			drivers := protected.Group("/drivers/")
+			{
+				drivers.POST("", controllers.CreateDriverController)
+				drivers.GET(":id/", controllers.GetDriverController)
+				drivers.PUT(":id/", controllers.UpdateDriverController)
+				drivers.DELETE(":id/", controllers.DeleteDriverController)
+				drivers.GET("", controllers.GetAllDriversController)
+			}
 		}
 	}
 
