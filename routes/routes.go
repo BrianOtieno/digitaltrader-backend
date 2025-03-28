@@ -280,6 +280,116 @@ func SetupRouter() *gin.Engine {
 				drivers.DELETE(":id/", controllers.DeleteDriverController)
 				drivers.GET("", controllers.GetAllDriversController)
 			}
+
+			// Manage
+			manages := protected.Group("/manages/")
+			{
+				manages.POST("", controllers.CreateManageController)
+				manages.GET(":id/", controllers.GetManageController)
+				manages.PUT(":id/", controllers.UpdateManageController)
+				manages.DELETE(":id/", controllers.DeleteManageController)
+				manages.GET("", controllers.GetAllManagesController)
+			}
+
+			// Orders
+			orders := protected.Group("/orders/")
+			{
+				orders.POST("", controllers.CreateOrderController)
+				orders.GET(":id/", controllers.GetOrderController)
+				orders.PUT(":id/", controllers.UpdateOrderController)
+				orders.DELETE(":id/", controllers.DeleteOrderController)
+				orders.GET("", controllers.GetAllOrdersController)
+			}
+
+			// Products
+			products := protected.Group("/products/")
+			{
+				products.POST("", controllers.CreateProductController)
+				products.GET(":id/", controllers.GetProductController)
+				products.PUT(":id/", controllers.UpdateProductController)
+				products.DELETE(":id/", controllers.DeleteProductController)
+				products.GET("", controllers.GetAllProductsController)
+			}
+
+			// Redeems
+			redeems := protected.Group("/redeems/")
+			{
+				redeems.POST("", controllers.CreateRedeemController)
+				redeems.GET(":id/", controllers.GetRedeemController)
+				redeems.PUT(":id/", controllers.UpdateRedeemController)
+				redeems.DELETE(":id/", controllers.DeleteRedeemController)
+				redeems.GET("", controllers.GetAllRedeemsController)
+			}
+
+			// Referrals
+			referrals := protected.Group("/referrals/")
+			{
+				referrals.POST("", controllers.CreateReferralController)
+				referrals.GET(":id/", controllers.GetReferralController)
+				referrals.PUT(":id/", controllers.UpdateReferralController)
+				referrals.DELETE(":id/", controllers.DeleteReferralController)
+				referrals.GET("", controllers.GetAllReferralsController)
+			}
+
+			// ReferralCodes
+			referralCodes := protected.Group("/referralcodes/")
+			{
+				referralCodes.POST("", controllers.CreateReferralCodeController)
+				referralCodes.GET(":id/", controllers.GetReferralCodeController)
+				referralCodes.PUT(":id/", controllers.UpdateReferralCodeController)
+				referralCodes.DELETE(":id/", controllers.DeleteReferralCodeController)
+				referralCodes.GET("", controllers.GetAllReferralCodesController)
+			}
+
+			// Store Requests
+			storeRequests := protected.Group("/store-requests/")
+			{
+				storeRequests.POST("", controllers.CreateStoreRequestController)
+				storeRequests.GET(":id/", controllers.GetStoreRequestController)
+				storeRequests.PUT(":id/", controllers.UpdateStoreRequestController)
+				storeRequests.DELETE(":id/", controllers.DeleteStoreRequestController)
+				storeRequests.GET("", controllers.GetAllStoreRequestsController)
+			}
+
+			// Subscribers
+			subscribers := protected.Group("/subscribers/")
+			{
+				subscribers.POST("", controllers.CreateSubscriberController)
+				subscribers.GET(":id/", controllers.GetSubscriberController)
+				subscribers.PUT(":id/", controllers.UpdateSubscriberController)
+				subscribers.DELETE(":id/", controllers.DeleteSubscriberController)
+				subscribers.GET("", controllers.GetAllSubscribersController)
+			}
+
+			// Complaints
+			complaints := protected.Group("/complaints/")
+			{
+				complaints.POST("", controllers.CreateComplaintController)
+				complaints.GET(":id/", controllers.GetComplaintController)
+				complaints.PUT(":id/", controllers.UpdateComplaintController)
+				complaints.DELETE(":id/", controllers.DeleteComplaintController)
+				complaints.GET("", controllers.GetAllComplaintsController)
+			}
+
+			// Driver Requests
+			driverRequests := protected.Group("/driver-requests/")
+			{
+				driverRequests.POST("", controllers.CreateDriverRequestController)
+				driverRequests.GET(":id/", controllers.GetDriverRequestController)
+				driverRequests.PUT(":id/", controllers.UpdateDriverRequestController)
+				driverRequests.DELETE(":id/", controllers.DeleteDriverRequestController)
+				driverRequests.GET("", controllers.GetAllDriverRequestsController)
+			}
+
+			// Settings
+			settings := protected.Group("/settings/")
+			{
+				settings.POST("", controllers.CreateSettingController)
+				settings.GET("", controllers.GetSettingController)
+				settings.PUT("", controllers.UpdateSettingController)
+				settings.DELETE("", controllers.DeleteSettingController)
+				settings.GET("/all", controllers.GetAllSettingsController) // Optional, for consistency with other endpoints
+			}
 		}
 	}
 
